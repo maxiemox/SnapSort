@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Snapsort{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <header>
+        <h1 class="welcome-title">Welcome back, {{ current_user.fullname }}! 👋</h1>
+        <p class="tagline">"Screenshots are proof of life's drama. Let's save 'em!"</p>
+    </header>
+
+    <div class="quick-actions">
+        <a href="{{ url_for('main.upload') }}" class="action-card">
+            <i class="fas fa-upload"></i>
+            <h3>Upload Screenshots</h3>
+            <p>Add new screenshots to your collection</p>
+        </a>
+        
+        <a href="{{ url_for('main.organize') }}" class="action-card">
+            <i class="fas fa-folder-open"></i>
+            <h3>Organize</h3>
+            <p>Sort and manage your screenshots</p>
+        </a>
+        
+        <a href="{{ url_for('main.favorites') }}" class="action-card">
+            <i class="fas fa-heart"></i>
+            <h3>Favorites</h3>
+            <p>View your favorite screenshots</p>
+        </a>
+    </div>
+
+    <section class="recent-uploads">
+        <h2>Recent Uploads</h2>
+        <div class="uploads-grid">
+            <!-- This will be populated dynamically -->
+            {% if recent_uploads %}
+                {% for upload in recent_uploads %}
+                <div class="upload-card">
+                    <img src="{{ url_for('static', filename='uploads/' + upload.filename) }}" alt="Screenshot">
+                    <div class="upload-info">
+                        <span class="upload-date">{{ upload.timestamp.strftime('%B %d, %Y') }}</span>
+                        <div class="upload-actions">
+                            <button class="action-btn"><i class="fas fa-heart"></i></button>
+                            <button class="action-btn"><i class="fas fa-download"></i></button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="no-uploads">No uploads yet. Start by adding some screenshots!</p>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %} 

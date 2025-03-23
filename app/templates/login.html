@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Snapsort{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-box">
+        <h1 class="main-title">Welcome to Snapsort <span class="emoji">📸</span></h1>
+        
+        <div class="form-toggle">
+            <button class="toggle-btn active" onclick="toggleForm('login')">Login</button>
+            <button class="toggle-btn" onclick="toggleForm('signup')">Sign Up</button>
+        </div>
+
+        <div id="messageContainer" class="message-container"></div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" name="email" placeholder="Email" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+            <div class="remember-me">
+                <input type="checkbox" id="rememberMe" name="rememberMe">
+                <label for="rememberMe">Remember me</label>
+            </div>
+            <button type="submit" class="submit-btn">Login</button>
+        </form>
+
+        <!-- Sign Up Form -->
+        <form id="signupForm" class="auth-form hidden" onsubmit="handleSignup(event)">
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" name="username" placeholder="Username" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" name="email" placeholder="Email" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="confirmPassword" placeholder="Confirm Password" required>
+            </div>
+            <button type="submit" class="submit-btn">Create Account</button>
+        </form>
+    </div>
+</div>
+
+<script>
+// Check for stored credentials on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+        const user = JSON.parse(storedUser);
+        document.querySelector('input[name="email"]').value = user.email || '';
+        document.querySelector('input[name="password"]').value = user.password || '';
+        document.querySelector('#rememberMe').checked = true;
+    }
+});
+
+function showMessage(message, type = 'error') {
+    const messageContainer = document.getElementById('messageContainer');
+    messageContainer.innerHTML = `
+        <div class="${type}-message">
+            ${message}
+        </div>
+    `;
+    setTimeout(() => {
+        messageContainer.innerHTML = '';
+    }, 5000);
+}
+
+function toggleForm(formType) {
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const buttons = document.querySelectorAll('.toggle-btn');
+    
+    if (formType === 'login') {
+        loginForm.classList.remove('hidden');
+        signupForm.classList.add('hidden');
+        buttons[0].classList.add('active');
+        buttons[1].classList.remove('active');
+    } else {
+        loginForm.classList.add('hidden');
+        signupForm.classList.remove('hidden');
+        buttons[0].classList.remove('active');
+        buttons[1].classList.add('active');
+    }
+    document.getElementById('messageContainer').innerHTML = '';
+}
+
+async function handleLogin(event) {
+    event.preventDefault();
+    const form = event.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    
+    try {
+        const formData = new FormData(form);
+        const userData = {
+            email: formData.get('email'),
+            password: formData.get('password')
+        };
+
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            // Store user data if remember me is checked
+            if (form.querySelector('#rememberMe').checked) {
+                localStorage.setItem('user', JSON.stringify(userData));
+            } else {
+                localStorage.removeItem('user');
+            }
+
+            // Store auth token
+            localStorage.setItem('authToken', data.token);
+            
+            showMessage('Login successful! Redirecting...', 'success');
+            setTimeout(() => {
+                window.location.href = data.redirect;
+            }, 1000);
+        } else {
+            showMessage(data.message);
+        }
+    } catch (error) {
+        showMessage('An error occurred. Please try again.');
+    } finally {
+        submitBtn.disabled = false;
+    }
+}
+
+async function handleSignup(event) {
+    event.preventDefault();
+    const form = event.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+
+    const formData = new FormData(form);
+    if (formData.get('password') !== formData.get('confirmPassword')) {
+        showMessage('Passwords do not match!');
+        submitBtn.disabled = false;
+        return;
+    }
+
+    try {
+        const userData = {
+            username: formData.get('username'),
+            email: formData.get('email'),
+            password: formData.get('password')
+        };
+
+        const response = await fetch('/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            // Store the new user's credentials
+            localStorage.setItem('user', JSON.stringify({
+                email: userData.email,
+                password: userData.password
+            }));
+            
+            showMessage('Account created successfully! Please login.', 'success');
+            toggleForm('login');
+            
+            // Auto-fill the login form
+            const loginForm = document.getElementById('loginForm');
+            loginForm.querySelector('input[name="email"]').value = userData.email;
+            loginForm.querySelector('input[name="password"]').value = userData.password;
+            loginForm.querySelector('#rememberMe').checked = true;
+        } else {
+            showMessage(data.message);
+        }
+    } catch (error) {
+        showMessage('An error occurred. Please try again.');
+    } finally {
+        submitBtn.disabled = false;
+    }
+}
+
+// Function to check authentication status
+function checkAuth() {
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken) {
+        window.location.href = '/login';
+    }
+    return authToken;
+}
+
+// Function to logout
+function logout() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+}
+</script>
+{% endblock %} 

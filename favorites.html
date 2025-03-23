@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snapsort | Favorites</title>
+    <link rel="stylesheet" href="favorites-styles.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Fredoka:wght@600&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="floating-emojis">
+        <span>⭐</span>
+        <span>💖</span>
+        <span>✨</span>
+        <span>🌟</span>
+        <span>💫</span>
+    </div>
+
+    <div class="page-container">
+        <header>
+            <h1 class="main-title">My Favorites <span class="emoji">💝</span></h1>
+            <p class="subtitle">Drag and arrange your favorite screenshots!</p>
+        </header>
+
+        <div class="favorites-grid" id="favoritesGrid">
+            <!-- Example favorite items -->
+            <div class="favorite-item" draggable="true">
+                <div class="favorite-content">
+                    <div class="emoji-badge">⭐</div>
+                    <img src="https://picsum.photos/300/400" alt="Favorite screenshot">
+                    <div class="item-details">
+                        <h3>Amazing Design</h3>
+                        <div class="tags">
+                            <span class="tag">✨ inspiration</span>
+                            <span class="tag">🎨 design</span>
+                        </div>
+                        <div class="item-actions">
+                            <button class="action-btn wobble-effect">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add more favorite items as needed -->
+            <div class="favorite-item" draggable="true">
+                <div class="favorite-content">
+                    <div class="emoji-badge">🌟</div>
+                    <img src="https://picsum.photos/300/300" alt="Favorite screenshot">
+                    <div class="item-details">
+                        <h3>Cool Project</h3>
+                        <div class="tags">
+                            <span class="tag">💻 coding</span>
+                            <span class="tag">🚀 project</span>
+                        </div>
+                        <div class="item-actions">
+                            <button class="action-btn wobble-effect">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('favoritesGrid');
+            const items = document.querySelectorAll('.favorite-item');
+
+            // Add floating emojis randomly
+            function createFloatingEmoji() {
+                const emojis = ['⭐', '💖', '✨', '🌟', '💫'];
+                const emoji = document.createElement('span');
+                emoji.className = 'floating-emoji';
+                emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                emoji.style.left = Math.random() * 100 + 'vw';
+                document.querySelector('.floating-emojis').appendChild(emoji);
+
+                // Remove emoji after animation
+                emoji.addEventListener('animationend', () => emoji.remove());
+            }
+
+            // Create floating emojis periodically
+            setInterval(createFloatingEmoji, 3000);
+
+            // Drag and Drop functionality
+            let draggedItem = null;
+
+            items.forEach(item => {
+                item.addEventListener('dragstart', function(e) {
+                    draggedItem = this;
+                    this.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+
+                item.addEventListener('dragend', function() {
+                    this.classList.remove('dragging');
+                });
+
+                item.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    const afterElement = getDragAfterElement(grid, e.clientY);
+                    const currentItem = draggedItem;
+                    if (afterElement == null) {
+                        grid.appendChild(currentItem);
+                    } else {
+                        grid.insertBefore(currentItem, afterElement);
+                    }
+                });
+            });
+
+            function getDragAfterElement(container, y) {
+                const draggableElements = [...container.querySelectorAll('.favorite-item:not(.dragging)')];
+
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+
+            // Add hover effect to action buttons
+            const actionButtons = document.querySelectorAll('.action-btn');
+            actionButtons.forEach(button => {
+                button.addEventListener('mouseover', function() {
+                    this.classList.add('hover');
+                });
+                button.addEventListener('mouseout', function() {
+                    this.classList.remove('hover');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

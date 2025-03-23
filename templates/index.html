@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snapsort | Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1 class="main-title">Ctrl+S</h1>
+        <p class="tagline">"Screenshots are proof of life's drama. Let's save 'em!"</p>
+        <nav>
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('favorites') }}">Favorites</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
+    </header>
+
+    <section class="home-container">
+        <div class="welcome-box">
+            <h2>Welcome Back!</h2>
+            <p>Your digital memories are waiting for you.</p>
+            <a href="{{ url_for('favorites') }}" class="btn">View Favorites →</a>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2025 Snapsort | Ctrl+S. Because memory fails, but screenshots don't.</p>
+    </footer>
+</body>
+</html> 

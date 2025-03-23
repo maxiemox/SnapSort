@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snapsort | Organize</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #7C3AED;
+            --secondary-color: #EC4899;
+            --background-color: #F3E8FF;
+            --text-color: #1F2937;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--background-color), #FCE7F3);
+        }
+
+        nav {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        nav a {
+            color: var(--text-color);
+            text-decoration: none;
+            margin-right: 2rem;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .main-title {
+            font-size: 2.5rem;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+
+        .search-bar {
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 1rem 3rem;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 1rem;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6B7280;
+        }
+
+        .filter-options {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 20px;
+            background: white;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .filter-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .masonry-grid {
+            columns: 4 250px;
+            column-gap: 1.5rem;
+        }
+
+        .image-card {
+            break-inside: avoid;
+            margin-bottom: 1.5rem;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .image-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-container img {
+            width: 100%;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .image-card:hover .image-container img {
+            transform: scale(1.05);
+        }
+
+        .image-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+            padding: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-container:hover .image-overlay {
+            opacity: 1;
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            background: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-color);
+        }
+
+        .action-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .image-info {
+            padding: 1rem;
+        }
+
+        .image-name {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .upload-date {
+            font-size: 0.9rem;
+            color: #6B7280;
+        }
+
+        .no-images {
+            text-align: center;
+            padding: 3rem;
+            color: #6B7280;
+            font-size: 1.2rem;
+            background: white;
+            border-radius: 15px;
+            margin: 2rem auto;
+            max-width: 500px;
+        }
+
+        .message {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .masonry-grid {
+                columns: 2 200px;
+            }
+
+            .filter-options {
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .masonry-grid {
+                columns: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="upload.html"><i class="fas fa-upload"></i> Upload</a>
+        <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </nav>
+
+    <div class="container">
+        <header>
+            <h1 class="main-title">Organize Your Screenshots</h1>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search your screenshots..." onkeyup="searchImages(this.value)">
+            </div>
+            <div class="filter-options">
+                <button class="filter-btn active" onclick="filterImages('all')">All</button>
+                <button class="filter-btn" onclick="filterImages('recent')">Recent</button>
+                <button class="filter-btn" onclick="filterImages('oldest')">Oldest</button>
+            </div>
+        </header>
+
+        <div class="masonry-grid" id="imageGrid">
+            <!-- Images will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        if (!localStorage.getItem('currentUser')) {
+            window.location.href = 'login.html';
+        }
+
+        function showMessage(text, type = 'info') {
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            document.body.appendChild(message);
+            setTimeout(() => message.remove(), 3000);
+        }
+
+        // Load and display images
+        function loadImages() {
+            const imageGrid = document.getElementById('imageGrid');
+            let uploadedImages = JSON.parse(localStorage.getItem('uploadedImages')) || [];
+            
+            // Remove duplicates based on image ID
+            uploadedImages = [...new Map(uploadedImages.map(item => [item.id, item])).values()];
+            
+            // Update localStorage with de-duped array
+            localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages));
+            
+            if (uploadedImages.length === 0) {
+                imageGrid.innerHTML = `
+                    <div class="no-images">
+                        <i class="fas fa-image" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                        <p>No images uploaded yet. Start by adding some screenshots!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            imageGrid.innerHTML = uploadedImages.map(image => `
+                <div class="image-card" data-name="${image.name.toLowerCase()}">
+                    <div class="image-container">
+                        <img src="${image.data}" alt="${image.name}">
+                        <div class="image-overlay">
+                            <div class="image-actions">
+                                <button class="action-btn" onclick="downloadImage('${image.id}')" title="Download">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="action-btn" onclick="deleteImage('${image.id}')" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="image-info">
+                        <div class="image-name">${image.name}</div>
+                        <div class="upload-date">
+                            Uploaded on ${new Date(image.uploadDate).toLocaleDateString()}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Search images
+        function searchImages(query) {
+            const cards = document.querySelectorAll('.image-card');
+            query = query.toLowerCase();
+            
+            cards.forEach(card => {
+                const name = card.dataset.name;
+                if (name.includes(query)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Filter images
+        function filterImages(filter) {
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            let uploadedImages = JSON.parse(localStorage.getItem('uploadedImages')) || [];
+            
+            switch(filter) {
+                case 'recent':
+                    uploadedImages.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+                    break;
+                case 'oldest':
+                    uploadedImages.sort((a, b) => new Date(a.uploadDate) - new Date(b.uploadDate));
+                    break;
+                default:
+                    // 'all' - no sorting needed
+                    break;
+            }
+            
+            localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages));
+            loadImages();
+        }
+
+        // Download image
+        function downloadImage(id) {
+            const images = JSON.parse(localStorage.getItem('uploadedImages')) || [];
+            const image = images.find(img => img.id.toString() === id);
+            
+            if (image) {
+                const link = document.createElement('a');
+                link.href = image.data;
+                link.download = image.name;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showMessage('Image downloaded successfully!');
+            }
+        }
+
+        // Delete image
+        function deleteImage(id) {
+            if (confirm('Are you sure you want to delete this image?')) {
+                let images = JSON.parse(localStorage.getItem('uploadedImages')) || [];
+                images = images.filter(img => img.id.toString() !== id);
+                localStorage.setItem('uploadedImages', JSON.stringify(images));
+                loadImages();
+                showMessage('Image deleted successfully!');
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+
+        // Load images when page loads
+        document.addEventListener('DOMContentLoaded', loadImages);
+    </script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Upload - Snapsort{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <header>
+        <h1 class="main-title">Upload Your Screenshots</h1>
+        <p class="subtitle">Drag & drop your screenshots or browse to upload</p>
+    </header>
+
+    <main class="upload-container">
+        <div class="upload-box" id="dropZone">
+            <div class="upload-icon">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <div class="upload-text">
+                <h3>Drop your files here</h3>
+                <p>or</p>
+                <label class="upload-button" for="fileInput">
+                    Browse Files
+                    <input type="file" id="fileInput" multiple accept="image/*" hidden>
+                </label>
+            </div>
+            <p class="file-info">Supported formats: PNG, JPG, JPEG, GIF</p>
+        </div>
+
+        <div class="uploads-preview">
+            <h3>Selected Files</h3>
+            <div class="preview-grid" id="previewArea"></div>
+        </div>
+
+        <div class="upload-actions">
+            <button class="action-button cancel" onclick="clearAll()">Clear All</button>
+            <button class="action-button upload" onclick="uploadFiles()">Upload Files</button>
+        </div>
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const previewArea = document.getElementById('previewArea');
+
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    // Highlight drop zone when item is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropZone.classList.add('highlight');
+    }
+
+    function unhighlight(e) {
+        dropZone.classList.remove('highlight');
+    }
+
+    // Handle dropped files
+    dropZone.addEventListener('drop', handleDrop, false);
+    fileInput.addEventListener('change', handleFiles, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles({ target: { files: files } });
+    }
+
+    function handleFiles(e) {
+        const files = [...e.target.files];
+        files.forEach(previewFile);
+    }
+
+    function previewFile(file) {
+        if (!file.type.startsWith('image/')) {
+            showMessage('Only image files are allowed', 'error');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = function() {
+            const preview = document.createElement('div');
+            preview.className = 'preview-item';
+            preview.innerHTML = `
+                <img src="${reader.result}" alt="Preview">
+                <div class="preview-overlay">
+                    <span class="filename">${file.name}</span>
+                    <button class="remove-btn" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            previewArea.appendChild(preview);
+        }
+    }
+});
+
+function clearAll() {
+    document.getElementById('previewArea').innerHTML = '';
+    document.getElementById('fileInput').value = '';
+}
+
+function showMessage(message, type) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}`;
+    messageDiv.textContent = message;
+    document.querySelector('.upload-container').prepend(messageDiv);
+    setTimeout(() => messageDiv.remove(), 3000);
+}
+
+async function uploadFiles() {
+    const previewItems = document.querySelectorAll('.preview-item img');
+    if (previewItems.length === 0) {
+        showMessage('Please select files to upload', 'error');
+        return;
+    }
+
+    const uploadButton = document.querySelector('.action-button.upload');
+    uploadButton.disabled = true;
+    uploadButton.textContent = 'Uploading...';
+
+    try {
+        // Here you would normally send the files to your server
+        // For demo purposes, we'll just show a success message
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate upload
+        showMessage('Files uploaded successfully!', 'success');
+        clearAll();
+    } catch (error) {
+        showMessage('Error uploading files', 'error');
+    } finally {
+        uploadButton.disabled = false;
+        uploadButton.textContent = 'Upload Files';
+    }
+}
+</script>
+{% endblock %} 
